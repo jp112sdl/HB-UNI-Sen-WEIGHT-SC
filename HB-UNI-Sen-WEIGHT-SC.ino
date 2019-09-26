@@ -24,8 +24,6 @@ const float HX711_CALIBRATIONS[] = { 400.87f, 412.73f, 413.41f,  399.76f };
 const int32_t    HX711_OFFSETS[] = {  37366L,  31404L,  58191L, -151437L };
 #define DEVICE_CHANNEL_COUNT sizeof(HX711_DOUT_PINS) + 1
 
-#define AVERAGE_READ_COUNT 10
-
 
 #define EI_NOTEXTERNAL
 #include <EnableInterrupt.h>
@@ -73,10 +71,10 @@ const struct DeviceInfo PROGMEM devinfo = {
 /**
    Configure the used hardware
 */
-typedef AskSin<StatusLed<LED_PIN>, BatterySensorUni<A1,5>, Radio<AvrSPI<10, 11, 12, 13>, 2>> Hal;
+typedef AskSin<StatusLed<LED_PIN>, BatterySensorUni<A1, 5>, Radio<AvrSPI<10, 11, 12, 13>, 2>> Hal;
 Hal hal;
 
-DEFREGISTER(UReg0, MASTERID_REGS, 0x01, 0x02, 0x03, 0x04, 0x05, 0x20, 0x21, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2a)
+DEFREGISTER(UReg0, MASTERID_REGS, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x20, 0x21, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2a)
 class UList0 : public RegList0<UReg0> {
   public:
     UList0 (uint16_t addr) : RegList0<UReg0>(addr) {}
@@ -88,6 +86,13 @@ class UList0 : public RegList0<UReg0> {
       return (this->readRegister(0x20, 0) << 8) + this->readRegister(0x21, 0);
     }
 
+    bool Averaging (uint8_t value) const {
+      return this->writeRegister(0x06, value & 0xff);
+    }
+    uint8_t Averaging () const {
+      return this->readRegister(0x06, 0);
+    }
+
     bool TaraOnRestart (uint8_t value) const {
       return this->writeRegister(0x05, 0x01, 0, value & 0xff);
     }
@@ -97,56 +102,56 @@ class UList0 : public RegList0<UReg0> {
 
     bool Tara (int32_t value) const {
       return
-          this->writeRegister(0x01, (value >> 24) & 0xff) &&
-          this->writeRegister(0x02, (value >> 16) & 0xff) &&
-          this->writeRegister(0x03, (value >> 8) & 0xff) &&
-          this->writeRegister(0x04, (value) & 0xff)
-          ;
+        this->writeRegister(0x01, (value >> 24) & 0xff) &&
+        this->writeRegister(0x02, (value >> 16) & 0xff) &&
+        this->writeRegister(0x03, (value >> 8) & 0xff) &&
+        this->writeRegister(0x04, (value) & 0xff)
+        ;
     }
 
     int32_t Tara () const {
       return
-          ((int32_t)(this->readRegister(0x01, 0)) << 24) +
-          ((int32_t)(this->readRegister(0x02, 0)) << 16) +
-          ((int32_t)(this->readRegister(0x03, 0)) << 8) +
-          ((int32_t)(this->readRegister(0x04, 0)))
-          ;
+        ((int32_t)(this->readRegister(0x01, 0)) << 24) +
+        ((int32_t)(this->readRegister(0x02, 0)) << 16) +
+        ((int32_t)(this->readRegister(0x03, 0)) << 8) +
+        ((int32_t)(this->readRegister(0x04, 0)))
+        ;
     }
 
     bool WeightLimit (int32_t value) const {
       return
-          this->writeRegister(0x23, (value >> 24) & 0xff) &&
-          this->writeRegister(0x24, (value >> 16) & 0xff) &&
-          this->writeRegister(0x25, (value >> 8) & 0xff) &&
-          this->writeRegister(0x26, (value) & 0xff)
-          ;
+        this->writeRegister(0x23, (value >> 24) & 0xff) &&
+        this->writeRegister(0x24, (value >> 16) & 0xff) &&
+        this->writeRegister(0x25, (value >> 8) & 0xff) &&
+        this->writeRegister(0x26, (value) & 0xff)
+        ;
     }
 
     int32_t WeightLimit () const {
       return
-          ((int32_t)(this->readRegister(0x23, 0)) << 24) +
-          ((int32_t)(this->readRegister(0x24, 0)) << 16) +
-          ((int32_t)(this->readRegister(0x25, 0)) << 8) +
-          ((int32_t)(this->readRegister(0x26, 0)))
-          ;
+        ((int32_t)(this->readRegister(0x23, 0)) << 24) +
+        ((int32_t)(this->readRegister(0x24, 0)) << 16) +
+        ((int32_t)(this->readRegister(0x25, 0)) << 8) +
+        ((int32_t)(this->readRegister(0x26, 0)))
+        ;
     }
 
     bool WeightHysteresis (int32_t value) const {
       return
-          this->writeRegister(0x27, (value >> 24) & 0xff) &&
-          this->writeRegister(0x28, (value >> 16) & 0xff) &&
-          this->writeRegister(0x29, (value >> 8) & 0xff) &&
-          this->writeRegister(0x2a, (value) & 0xff)
-          ;
+        this->writeRegister(0x27, (value >> 24) & 0xff) &&
+        this->writeRegister(0x28, (value >> 16) & 0xff) &&
+        this->writeRegister(0x29, (value >> 8) & 0xff) &&
+        this->writeRegister(0x2a, (value) & 0xff)
+        ;
     }
 
     int32_t WeightHysteresis () const {
       return
-          ((int32_t)(this->readRegister(0x27, 0)) << 24) +
-          ((int32_t)(this->readRegister(0x28, 0)) << 16) +
-          ((int32_t)(this->readRegister(0x29, 0)) << 8) +
-          ((int32_t)(this->readRegister(0x2a, 0)))
-          ;
+        ((int32_t)(this->readRegister(0x27, 0)) << 24) +
+        ((int32_t)(this->readRegister(0x28, 0)) << 16) +
+        ((int32_t)(this->readRegister(0x29, 0)) << 8) +
+        ((int32_t)(this->readRegister(0x2a, 0)))
+        ;
     }
 
     void defaults () {
@@ -154,6 +159,7 @@ class UList0 : public RegList0<UReg0> {
       Sendeintervall(180);
       TaraOnRestart(0);
       Tara(0);
+      Averaging(8);
       //WeightLimit(0);
       //WeightHysteresis(0);
     }
@@ -177,49 +183,49 @@ class SCList1 : public RegList1<Reg1> {
 typedef ThreeStateChannel<Hal, UList0, SCList1, DefList4, PEERS_PER_SCCHANNEL> SCChannel;
 
 class LcdType {
-private:
-  LiquidCrystal_I2C LCD;
-  const char waitchar[4];
-  uint8_t wc;
-public:
-  LcdType () : LCD(0x27, LCD_COLUMNS, LCD_ROWS), waitchar{ '|', '/', '-', byte(7)}, wc(0)  {}
-  virtual ~LcdType () {}
+  private:
+    LiquidCrystal_I2C LCD;
+    const char waitchar[4];
+    uint8_t wc;
+  public:
+    LcdType () : LCD(0x27, LCD_COLUMNS, LCD_ROWS), waitchar{ '|', '/', '-', byte(7)}, wc(0)  {}
+    virtual ~LcdType () {}
 
-  void init() {
-     LCD.init();
-     LCD.clear();
-     LCD.backlight();
-     uint8_t customBlockFrame[8]  = { 0x1F, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x1F };
-     uint8_t customBlockFilled[8] = { 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F };
-     uint8_t customBackslash[8]   = { 0x00, 0x10, 0x08, 0x04, 0x02, 0x01, 0x00, 0x00 };
-     LCD.createChar(5, customBlockFrame);
-     LCD.createChar(6, customBlockFilled);
-     LCD.createChar(7, customBackslash);
-   }
-
-  void waitProgress(bool show) {
-    LCD.setCursor(0,1);
-    if (show) {
-      LCD.print(waitchar[wc++]);
-      if (wc > 3) wc = 0;
-    } else {
-      LCD.print(" ");
+    void init() {
+      LCD.init();
+      LCD.clear();
+      LCD.backlight();
+      uint8_t customBlockFrame[8]  = { 0x1F, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x1F };
+      uint8_t customBlockFilled[8] = { 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F };
+      uint8_t customBackslash[8]   = { 0x00, 0x10, 0x08, 0x04, 0x02, 0x01, 0x00, 0x00 };
+      LCD.createChar(5, customBlockFrame);
+      LCD.createChar(6, customBlockFilled);
+      LCD.createChar(7, customBackslash);
     }
-  }
 
-  void writeLine(uint8_t line, const char * l, bool center, bool clear) {
-    LCD.setCursor(0, line - 1);
-    if (clear) LCD.print(EMPTYLINE);
-    if (center) {
-      LCD.setCursor((16 - strlen(l)) / 2 , line - 1);
+    void waitProgress(bool show) {
+      LCD.setCursor(0, 1);
+      if (show) {
+        LCD.print(waitchar[wc++]);
+        if (wc > 3) wc = 0;
+      } else {
+        LCD.print(" ");
+      }
     }
-    LCD.print(l);
-  }
 
-  void writeChar(const char c, uint8_t col, uint8_t row) {
-    LCD.setCursor(col - 1, row - 1);
-    LCD.write(c);
-  }
+    void writeLine(uint8_t line, const char * l, bool center, bool clear) {
+      LCD.setCursor(0, line - 1);
+      if (clear) LCD.print(EMPTYLINE);
+      if (center) {
+        LCD.setCursor((16 - strlen(l)) / 2 , line - 1);
+      }
+      LCD.print(l);
+    }
+
+    void writeChar(const char c, uint8_t col, uint8_t row) {
+      LCD.setCursor(col - 1, row - 1);
+      LCD.write(c);
+    }
 
 } lcd;
 
@@ -227,7 +233,7 @@ class MeasureEventMsg : public Message {
   public:
     void init(uint8_t msgcnt, int32_t *weight, int32_t sum) {
       Message::init(0x0d + (sizeof(HX711_DOUT_PINS) * 3), msgcnt, 0x53, BIDI | WKMEUP, 0x00, 0x42 );
-      pload[0] = (weight[0]>> 8) & 0x7f;
+      pload[0] = (weight[0] >> 8) & 0x7f;
       pload[1] = weight[0] & 0xff;
 
       for (uint8_t s = 1; s < sizeof(HX711_DOUT_PINS); s++) {
@@ -262,38 +268,50 @@ class MeasureChannel : public Channel<Hal, List1, EmptyList, List4, PEERS_PER_CH
       processMessage();
     }
 
-    void i2str(int i, char *buf){
-      byte l=0;
-      if(i<0) buf[l++]='-';
-      boolean leadingZ=true;
-      for(int div=10000, mod=0; div>0; div/=10){
-        mod=i%div;
-        i/=div;
-        if(!leadingZ || i!=0){
-           leadingZ=false;
-           buf[l++]=i+'0';
-        }
-        i=mod;
-      }
-      buf[l]=0;
-    }
+    void i2str(int i, char *buf) {
+      byte l = 0;
+      boolean leadingZ = true;
 
+      if (i < 0) {
+        buf[l++] = '-';
+        i *= -1;
+      }
+
+      if (i == 0)
+        buf[l++] = '0';
+      else {
+        for (int div = 10000, mod = 0; div > 0; div /= 10) {
+          mod = i % div;
+          i /= div;
+          if (!leadingZ || i != 0) {
+            leadingZ = false;
+            buf[l++] = i + '0';
+          }
+          i = mod;
+        }
+      }
+      buf[l] = 0;
+    }
     void measure() {
       DPRINTLN("measuring... ");
-      bool ToR=device().getList0().TaraOnRestart();
+      bool ToR = device().getList0().TaraOnRestart();
       weight_sum = device().getList0().Tara();
-      //DPRINT("Tara on Restart: ");DDECLN(ToR);
+      if (first) {
+        DPRINT("Tara on Restart: ");
+        DDECLN(ToR);
+      }
       for (uint8_t i = 0; i < sizeof(HX711_DOUT_PINS); i++) {
         lcd.waitProgress(true);
         if (first) {
-          (ToR == true) ? hx711[i].tare(AVERAGE_READ_COUNT) : hx711[i].set_offset(HX711_OFFSETS[i]);
+          lcd.writeLine(1, "Auto TARA", true, true);
+          (ToR == true) ? hx711[i].tare(max(1,device().getList0().Averaging())) : hx711[i].set_offset(HX711_OFFSETS[i]);
         }
-        weight[i] = (int32_t)(hx711[i].get_units(AVERAGE_READ_COUNT));
-        DPRINT(F("+Weight (#")); DDEC(i+1); DPRINT(F(") g: ")); DDECLN(weight[i]);
+        weight[i] = (int32_t)(hx711[i].get_units(max(1,device().getList0().Averaging())));
+        DPRINT(F("+Weight (#")); DDEC(i + 1); DPRINT(F(") g: ")); DDECLN(weight[i]);
         weight_sum += weight[i];
       }
 
-      DPRINT(F("+Tara        g: "));DDECLN(device().getList0().Tara());
+      DPRINT(F("+Tara        g: ")); DDECLN(device().getList0().Tara());
       DPRINT(F("+Weight (#")); DDEC(sizeof(HX711_DOUT_PINS) + 1); DPRINT(F(") g: ")); DDECLN(weight_sum);
 
       if (weight_sum > (device().getList0().WeightLimit() + device().getList0().WeightHysteresis())) {
@@ -315,8 +333,8 @@ class MeasureChannel : public Channel<Hal, List1, EmptyList, List4, PEERS_PER_CH
       lcd.waitProgress(false);
 
       char intStr[17];
-      //i2str(weight_sum,intStr);
-      sprintf(intStr, "%d",weight_sum);
+      i2str(weight_sum, intStr);
+      //sprintf(intStr, "%d",weight_sum);
       strcat(intStr, " Gramm");
       lcd.writeLine(1, intStr, true, true);
       DPRINTLN(intStr);
@@ -363,7 +381,7 @@ class MeasureChannel : public Channel<Hal, List1, EmptyList, List4, PEERS_PER_CH
           }
           if (chk == 9) {
             DPRINTLN(F(" ERR"));
-            while(1) {}
+            while (1) {}
           }
           _delay_ms(100);
         }
@@ -422,6 +440,7 @@ class UType : public ChannelDevice<Hal, VirtBaseChannel<Hal, UList0>, 2, UList0>
     virtual void configChanged () {
       DeviceType::configChanged();
       DPRINT(F("*Sendeintervall  : ")); DDECLN(this->getList0().Sendeintervall());
+      DPRINT(F("*Averaging       : ")); DDECLN(this->getList0().Averaging());
       DPRINT(F("*TaraOnRestart   : ")); DDECLN(this->getList0().TaraOnRestart());
       DPRINT(F("*Tara            : ")); DDECLN(this->getList0().Tara());
       DPRINT(F("*WeightHysteresis: ")); DDECLN(this->getList0().WeightHysteresis());
