@@ -32,7 +32,7 @@ const int32_t    HX711_OFFSETS[] = {  37366L,  31404L,  58191L, -151437L };
 
 #include <Register.h>
 #include <MultiChannelDevice.h>
-#include <ThreeState.h>
+#include <ContactState.h>
 
 #include <HX711.h>
 #include <LiquidCrystal_I2C.h>
@@ -180,7 +180,7 @@ class SCList1 : public RegList1<Reg1> {
     }
 };
 
-typedef ThreeStateChannel<Hal, UList0, SCList1, DefList4, PEERS_PER_SCCHANNEL> SCChannel;
+typedef TwoStateChannel<Hal, UList0, SCList1, DefList4, PEERS_PER_SCCHANNEL> SCChannel;
 
 class LcdType {
   private:
@@ -456,8 +456,7 @@ void setup () {
   sdev.init(hal);
   sdev.initLCD();
   buttonISR(cfgBtn, CONFIG_BUTTON_PIN);
-  const uint8_t posmap[4] = {Position::State::PosA, Position::State::PosB, Position::State::PosA, Position::State::PosB};
-  sdev.scChannel().init(SC_PIN, SC_PIN, posmap);
+  sdev.scChannel().init(SC_PIN);
   sdev.scChannel().changed(true);
   sdev.measureChannel().init();
   sendISR(ISR_PIN);
